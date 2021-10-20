@@ -1,4 +1,4 @@
-# Laravel + Typeahead Country/City
+# Laravel + Typeahead Country => City, City => Country
 
 This small demo application introduced feature of populating cities on country selection and populating country on city selection :)
 
