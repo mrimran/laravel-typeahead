@@ -1,8 +1,6 @@
 <?php
 
-use App\Http\Controllers\AutocompleteCityController;
 use App\Http\Controllers\AutocompleteController;
-use App\Http\Controllers\AutocompleteCountryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,5 +19,3 @@ Route::get('/', function () {
 });
 
 Route::get('/autocomplete', AutocompleteController::class);
-Route::get('/autocomplete_country', AutocompleteCountryController::class);
-Route::get('/autocomplete_city', AutocompleteCityController::class);
