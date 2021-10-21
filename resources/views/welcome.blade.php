@@ -34,6 +34,7 @@
             <input id="selection_type" type="hidden" name="selection_type" value="" />
             <input id="query_type" type="hidden" name="query_type" value="" />
             <input id="auto_trigger" type="hidden" name="auto_trigger" value="" />
+            <input id="auto_trigger_from" type="hidden" name="auto_trigger_from" value="" />
         </div>
     </body>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -43,6 +44,7 @@
         var path = "{{ url('autocomplete') }}";
         $('input.typeahead').typeahead({
             name: 'autocomp',
+            freeInput: false,
             classNames: {
                 input: 'autocomp-typeahead-input',
                 hint: 'autocomp-typeahead-hint',
@@ -55,7 +57,7 @@
                 }
 
                 return $.get(path, {
-                    query: query,
+                    query: $('#' + $('#query_type').val()).val(),
                     type: $('#query_type').val(),
                     selected_country: $('#selected_country').val(),
                     selected_city: $('#selected_city').val(),
@@ -63,6 +65,9 @@
                 }, function (data) {
                     return process(data);
                 });
+            },
+            activated: function (item) {
+                console.log('on active....', item);
             },
             afterSelect: function(item) {
                 // $('hiddenInputElement').val(map[item].id);
@@ -72,16 +77,23 @@
                 console.log('#selected_' + sourceElmType, selectedVal);
                 $('#selected_' + sourceElmType).val(selectedVal).change();
                 $('#selection_type').val(sourceElmType).change();
+                // $('#' + sourceElmType).typeahead("");
                 // $('#city').trigger('keyup').change();
 
                 if(sourceElmType == 'country' && $('#auto_trigger').val() != '1') {
                     $('#query_type').val('city');
                     $('#auto_trigger').val('1');
+                    $('#auto_trigger_from').val('country');
+                    $('#selected_city').val('');
                     $("#city.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
+                    $("#city.typeahead").focus().typeahead('val','').focus();
                 } else if(sourceElmType == 'city' && $('#auto_trigger').val() != '1') {
                     $('#query_type').val('country');
                     $('#auto_trigger').val('1');
+                    $('#auto_trigger_from').val('city');
+                    $('#selected_country').val('');
                     $("#country.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
+                    $("#country.typeahead").focus().typeahead('val','').focus();
                 }
                 // $("#city.typeahead").typeahead('val', '')
                 // $("#city.typeahead").focus().typeahead('val',theVal).focus();
@@ -92,17 +104,24 @@
 
         $(document).ready(function() {
             $('#auto_trigger').val('');
+            $('#auto_trigger_from').val('');
 
             $('input.typeahead').keypress(function() {
                 // console.log('typeahead', $(this).val());
                 $('#query_type').val($(this).attr('attrtype')).change();
+
+                if($(this).attr('attrtype') == $('#auto_trigger_from').val()) {
+                    $('#auto_trigger').val('');
+                }
             });
 
             $('#selected_country').change(function() {
+                // $('.typeahead.dropdown-menu').remove();
                 console.log('country selected', $(this).val());
             });
 
             $('#selected_city').change(function() {
+                // $('.typeahead.dropdown-menu').remove();
                 console.log('city selected', $(this).val());
             });
 

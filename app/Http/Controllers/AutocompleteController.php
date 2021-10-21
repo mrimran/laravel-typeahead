@@ -44,7 +44,7 @@ class AutocompleteController extends Controller
             $filteredData = $dataCollection->pluck('country');
         }
 
-        if ($request['query'] && $request['query'] != 'all') {
+        if ($request['query'] && $request['query'] != 'all' && !$request['auto_trigger']) {
             $filteredData = $filteredData->filter(function ($value, $key) use ($request) {
                 return stripos($value, $request['query']) !== false ? $value : null;
             });
