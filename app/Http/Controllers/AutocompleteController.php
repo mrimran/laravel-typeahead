@@ -11,9 +11,11 @@ class AutocompleteController extends Controller
         ['country' => 'USA', 'city' => 'New Jersey'],
         ['country' => 'USA', 'city' => 'Chicago'],
         ['country' => 'USA', 'city' => 'Dallas'],
+        ['country' => 'USA', 'city' => 'Common city'],
 
         ['country' => 'Canada', 'city' => 'Otowa'],
         ['country' => 'Canada', 'city' => 'Alberta'],
+        ['country' => 'Canada', 'city' => 'Common city'],
 
         ['country' => 'UK', 'city' => 'London'],
         ['country' => 'UK', 'city' => 'Bradford'],
@@ -38,25 +40,33 @@ class AutocompleteController extends Controller
             unset($request['selected_city']);
         }
 
+        if ($request['selected_country'] && $request['selected_city'] && $request['auto_trigger']) {
+            return [];
+        }
+
         if ($request['selected_country'] && $request['auto_trigger'] && $request['type'] == 'city') {
+            // dd('yaa1');
             $filteredData = $dataCollection->filter(function ($value, $key) use ($request) {
                 return $value['country'] == $request['selected_country'] ? $value : null;
             })->pluck('city');
         } elseif ($request['selected_city'] && $request['auto_trigger'] && $request['type'] == 'country') {
+            // dd('yaa2');
             $filteredData = $dataCollection->filter(function ($value, $key) use ($request) {
                 return $value['city'] == $request['selected_city'] ? $value : null;
             })->pluck('country');
+        } else if ($request['query'] && $request['query'] != 'all' && !$request['auto_trigger']) {
+            // dd('yaa5');
+            $filteredData = $filteredData->filter(function ($value, $key) use ($request) {
+                return stripos($value[$request['type']], $request['query']) !== false ? $value : null;
+            })->pluck($request['type']);
         } elseif ($request['type'] == 'city') {
+            // dd('yaa3');
             $filteredData = $dataCollection->pluck('city');
         } else {
+            // dd('yaa4');
             $filteredData = $dataCollection->pluck('country');
         }
 
-        if ($request['query'] && $request['query'] != 'all' && !$request['auto_trigger']) {
-            $filteredData = $filteredData->filter(function ($value, $key) use ($request) {
-                return stripos($value, $request['query']) !== false ? $value : null;
-            });
-        }
 
         return response()->json($filteredData->values()->unique()->values());
     }

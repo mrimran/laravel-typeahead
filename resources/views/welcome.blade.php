@@ -21,12 +21,12 @@
             <div class="row country_area">
                 <div class="col-md-6 offset-md-3 mt-5">
                     <h5>Laravel + Typeahead</h5>
-                    <input id="country" type="text" placeholder="Country" class="form-control typeahead country" attrtype="country">
+                    <input autocomplete="off" id="country" type="text" placeholder="Country" class="form-control typeahead country" attrtype="country">
                 </div>
             </div>
             <div class="row city_area">
                 <div class="col-md-6 offset-md-3 mt-5">
-                    <input id="city" type="text" placeholder="City" class="form-control typeahead city" attrtype="city">
+                    <input autocomplete="off" id="city" type="text" placeholder="City" class="form-control typeahead city" attrtype="city">
                 </div>
             </div>
             <input id="selected_country" type="hidden" name="selected_country" value="" />
@@ -59,7 +59,7 @@
                 }
 
                 return $.get(path, {
-                    query: $(queryType).val(),
+                    query: $('#' + queryType).val(),
                     type: queryType,
                     selected_country: $('#selected_country').val(),
                     selected_city: $('#selected_city').val(),
@@ -88,9 +88,9 @@
                 $(`.${queryType}_area`).find('.dropdown-menu').html('');
             }
             responseData.forEach(str => {
-                str = str.replace(/\s/g, '');
+                var idStr = str.replace(/\s/g, '');
                 // console.log('aya', $('#city_' + str), $('#city_' + str).length);
-                var id = `${queryType}_${str}`;
+                var id = `${queryType}_${idStr}`;
                 var areaClass = `${queryType}_area`;
                 if($(`#${id}`).length <= 0 || $(`#${id}`) == 'undefined') {
                     $(`.${areaClass}`).find('.dropdown-menu')
@@ -105,10 +105,12 @@
             if(item.length <= 0 || item == 'undefined') {
                 return;
             }
+            // console.log($('#' + sourceElmType).val());
             // $('hiddenInputElement').val(map[item].id);
             // return item;
             var selectedVal = item;
             sourceElmType = sourceElmType.length == 0 ? $($(thisObj).get(0).$element).attr('attrtype') : sourceElmType;
+            console.log('called...' + sourceElmType + '|' + item, $('#auto_trigger').val());
             console.log('#selected_' + sourceElmType, selectedVal);
             $('#selected_' + sourceElmType).val(selectedVal).change();
             $('#selection_type').val(sourceElmType).change();
@@ -116,28 +118,53 @@
             // $('#city').trigger('keyup').change();
 
             if(sourceElmType == 'country' && $('#auto_trigger').val() != '1') {
+                console.log('yaa');
                 $('#query_type').val('city');
                 $('#auto_trigger').val('1');
                 $('#auto_trigger_from').val('country');
                 $('#selected_city').val('');
                 $("#city.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
-                $("#city.typeahead").focus().typeahead('val','').focus();
+                // $("#city.typeahead").focus().typeahead('val','').focus();
                 $('.city_area').find('.dropdown-menu').show();
             } else if(sourceElmType == 'city' && $('#auto_trigger').val() != '1') {
+                console.log('mee');
                 $('#query_type').val('country');
                 $('#auto_trigger').val('1');
                 $('#auto_trigger_from').val('city');
                 $('#selected_country').val('');
                 $("#country.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
                 $('.country_area').find('.dropdown-menu').show();
-                $("#country.typeahead").focus().typeahead('val','').focus();
+                // $("#country.typeahead").focus().typeahead('val','').focus();
+            } else if($('#auto_trigger').val() == '1' && sourceElmType == 'city' && $('#country').val().length == 0) {
+                console.log('see');
+                $('#query_type').val('country');
+                $('#auto_trigger').val('1');
+                $('#auto_trigger_from').val('city');
+                $('#selected_country').val('');
+                $("#country.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
+                $('.country_area').find('.dropdown-menu').show();
+                // $("#country.typeahead").focus().typeahead('val','').focus();
+            }  else if($('#auto_trigger').val() == '1' && sourceElmType == 'country' && $('#city').val().length == 0) {
+                console.log('see2');
+                $('#query_type').val('city');
+                $('#auto_trigger').val('1');
+                $('#auto_trigger_from').val('country');
+                $('#selected_city').val('');
+                $("#city.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
+                // $("#city.typeahead").focus().typeahead('val','').focus();
+                $('.city_area').find('.dropdown-menu').show();
             }
 
-            if($('#' + sourceElmType).val() == 0) {
+            if(sourceElmType.length >= 1 && $('#' + sourceElmType).val() == 0) {
                 console.log('setting upt the valu');
                 // making sure value gets updated on select
                 setTimeout(() => {
                     $('#' + sourceElmType).val(item);
+                    $('#' + sourceElmType).trigger('change');
+                    $('#selected_' + sourceElmType).val(item).change();
+                    // $(`#${sourceElmType}.typeahead`).focus().typeahead('val','').focus();
+                    $(`#${sourceElmType}.typeahead`).val(item).trigger("input").focus();
+                    console.log('trying to call the api...');
                 }, 50);
             }
 
@@ -173,6 +200,15 @@
 
                 if(country == '0' || country == '') {
                     $('#selected_country').val('');
+                }
+            });
+
+            $('#city').change(function() {
+                console.log('city changed....', $('#city').val());
+                var country = $('#city').val();
+
+                if(country == '0' || country == '') {
+                    $('#selected_city').val('');
                 }
             });
 
