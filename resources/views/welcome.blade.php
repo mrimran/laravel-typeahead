@@ -154,6 +154,8 @@
             $('input.typeahead').keypress(function() {
                 // console.log('typeahead', $(this).val());
                 $('#query_type').val($(this).attr('attrtype')).change();
+                console.log('#'+$(this).attr('attrtype'));
+                $('#'+$(this).attr('attrtype')).trigger('change');
 
                 if($(this).attr('attrtype') == $('#auto_trigger_from').val()) {
                     $('#auto_trigger').val('');
@@ -165,8 +167,18 @@
                 console.log('country selected', $(this).val());
             });
 
+            $('#country').change(function() {
+                console.log('country changed....');
+                var country = $('#country').val();
+
+                if(country == '0' || country == '') {
+                    $('#selected_country').val('');
+                }
+            });
+
             $('#selected_city').change(function() {
                 // $('.typeahead.dropdown-menu').remove();
+                var selectedCity = $('#selected_city').val();
                 console.log('city selected', $(this).val());
             });
 
