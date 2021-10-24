@@ -52,55 +52,100 @@
             },
             source:  function (query, process) {
                 // console.log('called', item);
-                if($('#query_type').val().length <= 1) {
+                var queryType = $('#query_type').val();
+                var autoTrigger = $('#auto_trigger').val();
+                if(queryType.length <= 1) {
                     return false;
                 }
 
                 return $.get(path, {
-                    query: $('#' + $('#query_type').val()).val(),
-                    type: $('#query_type').val(),
+                    query: $(queryType).val(),
+                    type: queryType,
                     selected_country: $('#selected_country').val(),
                     selected_city: $('#selected_city').val(),
-                    auto_trigger: $('#auto_trigger').val()
+                    auto_trigger: autoTrigger
                 }, function (data) {
+                    console.log('autoTrigger', autoTrigger);
+                    if(autoTrigger == '1') {
+                        prepareCustomSelectionOptions(data, queryType);
+                    }
                     return process(data);
                 });
             },
             activated: function (item) {
                 console.log('on active....', item);
             },
+            // updater: function name(item) {
+            //     console.log('updater item', item);
+            // },
             afterSelect: function(item) {
-                // $('hiddenInputElement').val(map[item].id);
-                // return item;
-                var selectedVal = item;
-                var sourceElmType = $($(this).get(0).$element).attr('attrtype');
-                console.log('#selected_' + sourceElmType, selectedVal);
-                $('#selected_' + sourceElmType).val(selectedVal).change();
-                $('#selection_type').val(sourceElmType).change();
-                // $('#' + sourceElmType).typeahead("");
-                // $('#city').trigger('keyup').change();
-
-                if(sourceElmType == 'country' && $('#auto_trigger').val() != '1') {
-                    $('#query_type').val('city');
-                    $('#auto_trigger').val('1');
-                    $('#auto_trigger_from').val('country');
-                    $('#selected_city').val('');
-                    $("#city.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
-                    $("#city.typeahead").focus().typeahead('val','').focus();
-                } else if(sourceElmType == 'city' && $('#auto_trigger').val() != '1') {
-                    $('#query_type').val('country');
-                    $('#auto_trigger').val('1');
-                    $('#auto_trigger_from').val('city');
-                    $('#selected_country').val('');
-                    $("#country.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
-                    $("#country.typeahead").focus().typeahead('val','').focus();
-                }
-                // $("#city.typeahead").typeahead('val', '')
-                // $("#city.typeahead").focus().typeahead('val',theVal).focus();
-                // document.getElementById('selected_' + sourceElmType).value = selectedVal;
-                // console.log('changed', $('#selected_' + sourceElmType).val());
+                customAfterSelect(item, this, '');
             }
         });
+
+        function prepareCustomSelectionOptions(responseData, queryType) {
+            if(responseData.length >= 1) {
+                $(`.${queryType}_area`).find('.dropdown-menu').html('');
+            }
+            responseData.forEach(str => {
+                str = str.replace(/\s/g, '');
+                // console.log('aya', $('#city_' + str), $('#city_' + str).length);
+                var id = `${queryType}_${str}`;
+                var areaClass = `${queryType}_area`;
+                if($(`#${id}`).length <= 0 || $(`#${id}`) == 'undefined') {
+                    $(`.${areaClass}`).find('.dropdown-menu')
+                        .append('<li id="' + id + '" class=""><a class="dropdown-item" href="#" onclick="customAfterSelect(\'' + str + '\', $(\'.' + areaClass + '\'), \'' + queryType + '\')" role="option">' + str + '</a></li>');
+                }
+            });
+        }
+
+        function customAfterSelect(item, thisObj, sourceElmType) {
+            var passedStoredElmType = sourceElmType;
+            console.log('item', item, sourceElmType);
+            if(item.length <= 0 || item == 'undefined') {
+                return;
+            }
+            // $('hiddenInputElement').val(map[item].id);
+            // return item;
+            var selectedVal = item;
+            sourceElmType = sourceElmType.length == 0 ? $($(thisObj).get(0).$element).attr('attrtype') : sourceElmType;
+            console.log('#selected_' + sourceElmType, selectedVal);
+            $('#selected_' + sourceElmType).val(selectedVal).change();
+            $('#selection_type').val(sourceElmType).change();
+            // $('#' + sourceElmType).typeahead("");
+            // $('#city').trigger('keyup').change();
+
+            if(sourceElmType == 'country' && $('#auto_trigger').val() != '1') {
+                $('#query_type').val('city');
+                $('#auto_trigger').val('1');
+                $('#auto_trigger_from').val('country');
+                $('#selected_city').val('');
+                $("#city.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
+                $("#city.typeahead").focus().typeahead('val','').focus();
+                $('.city_area').find('.dropdown-menu').show();
+            } else if(sourceElmType == 'city' && $('#auto_trigger').val() != '1') {
+                $('#query_type').val('country');
+                $('#auto_trigger').val('1');
+                $('#auto_trigger_from').val('city');
+                $('#selected_country').val('');
+                $("#country.typeahead").eq(0).val('all').trigger("input").val('').trigger('input').focus();
+                $('.country_area').find('.dropdown-menu').show();
+                $("#country.typeahead").focus().typeahead('val','').focus();
+            }
+
+            if($('#' + sourceElmType).val() == 0) {
+                console.log('setting upt the valu');
+                // making sure value gets updated on select
+                setTimeout(() => {
+                    $('#' + sourceElmType).val(item);
+                }, 50);
+            }
+
+            // $("#city.typeahead").typeahead('val', '')
+            // $("#city.typeahead").focus().typeahead('val',theVal).focus();
+            // document.getElementById('selected_' + sourceElmType).value = selectedVal;
+            // console.log('changed', $('#selected_' + sourceElmType).val());
+        }
 
         $(document).ready(function() {
             $('#auto_trigger').val('');

@@ -30,6 +30,14 @@ class AutocompleteController extends Controller
     {
         $dataCollection = $filteredData = collect($this->countryCity);
 
+        if ($request['selected_country'] == '0') {
+            unset($request['selected_country']);
+        }
+
+        if ($request['selected_city'] == '0') {
+            unset($request['selected_city']);
+        }
+
         if ($request['selected_country'] && $request['auto_trigger'] && $request['type'] == 'city') {
             $filteredData = $dataCollection->filter(function ($value, $key) use ($request) {
                 return $value['country'] == $request['selected_country'] ? $value : null;
